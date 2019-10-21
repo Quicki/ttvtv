@@ -11,9 +11,35 @@
             margin: 0;
             overflow: hidden;
         }
+
+        div.controls {
+            position: absolute;
+            top:   200px;
+            left: -220px;
+            width: 200px;
+
+            padding: 15px;
+            background-color: rgba(255, 255, 255, .9);
+        }
+
+        div.controls:hover {
+            left: 0;
+        }
+
+        p {
+            margin: 0;
+
+            font: 10px Verdana;
+            white-space: pre-line;
+        }
     </style>
 
     <body>
+        <div class='controls'>
+            <p><b>Live Channels</b></p>
+            <p id='controls_live'>Loading...</p>
+        </div>
+
         <div id='twitch-embed'></div>
         <script src='https://embed.twitch.tv/embed/v1.js'></script>
 
@@ -27,8 +53,7 @@
             });
 
             const channels = [
-                'Kitboga',
-                'Cirno_TV'
+                'Twitch'
             ];
 
             function setHeader(xhr) {
@@ -59,7 +84,7 @@
                     if (live.includes(channels[i])) {
                         const player = embed.getPlayer();
 
-                        if (player.getChannel() != channels[i].toLowerCase()) {
+                        if (player.getChannel().toLowerCase() != channels[i].toLowerCase()) {
                             console.log('Switching to ' + channels[i]);
                             player.setChannel(channels[i]);
                         }
@@ -68,13 +93,17 @@
                     }
                 }
 
+                $('#controls_live').text(live.join('\n'));
                 live = [];
             });
 
-            findLiveChannel();
-            setInterval(function() {
+            setTimeout(function() {
                 findLiveChannel();
-            }, 60000);
+
+                setInterval(function() {
+                    findLiveChannel();
+                }, 60000);
+            }, 3000);
         </script>
     </body>
 </html>
