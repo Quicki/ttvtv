@@ -3,6 +3,7 @@
 <html>
     <head>
         <title>ttvtv</title>
+        <script src='http://code.jquery.com/jquery-1.11.2.min.js'></script>
     </head>
 
     <style>
@@ -17,12 +18,61 @@
         <script src='https://embed.twitch.tv/embed/v1.js'></script>
 
         <script type='text/javascript'>
-            new Twitch.Embed('twitch-embed', {
+            const embed = new Twitch.Embed('twitch-embed', {
                 width: Math.max(document.documentElement.clientWidth, window.innerWidth || 0),
                 height: Math.max(document.documentElement.clientHeight, window.innerHeight || 0),
                 channel: 'Cirno_TV',
                 theme: 'dark'
-            })
+            });
+
+            const channels = [
+                'kitboga',
+                'Cirno_TV'
+            ];
+
+            function setHeader(xhr) {
+                xhr.setRequestHeader('Client-ID', 'hlgxdgw5v621ly74w8ctucgj0kdaa2');
+            }
+
+            var live = [];
+
+            function findLiveChannel() {
+                for (let i = 0; i < channels.length; i++) {
+                    $.ajax({
+                        url: 'https://api.twitch.tv/helix/streams?user_login=' + channels[i],
+                        type: 'GET',
+                        dataType: 'json',
+                        beforeSend: setHeader,
+                        
+                        success: function(res) {
+                            if (res.data.length) {
+                                live.push(channels[i]);
+                            }
+                        }
+                    });
+                }
+            }
+
+            $(document).ajaxStop(function() {
+                for (let i = 0; i < channels.length; i++) {
+                    if (live.includes(channels[i])) {
+                        const player = embed.getPlayer();
+
+                        if (player.getChannel() != channels[i].toLowerCase()) {
+                            console.log('Switching to ' + channels[i]);
+                            player.setChannel(channels[i]);
+                        }
+
+                        break;
+                    }
+                }
+
+                live = [];
+            });
+
+            setInterval(function() {
+                findLiveChannel();
+            }, 60000);
         </script>
     </body>
 </html>
